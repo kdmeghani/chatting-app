@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+<div class="chat-container">
+    <div class="sidebar">
+        <div class="user-header">
+            <h3>Welcome, {{ username }}</h3>
+            <button id="logoutBtn">Logout</button>
+        </div>
+        <div class="search">
+            <input type="text" id="searchInput" placeholder="Search users...">
+            <div id="searchResults"></div>
+        </div>
+        <div class="friend-requests">
+            <a href="{{ url_for('list_requests') }}">Friend Requests</a>
+        </div>
+        <div class="friends-list" id="friendsList">
+            <!-- Friends will be loaded here -->
+        </div>
+    </div>
+    <div class="chat-area">
+        <div class="chat-header" id="chatHeader">
+            Select a friend to start chatting
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="typing-indicator" id="typingIndicator"></div>
+        <div class="message-input" id="messageInputContainer" style="display: none;">
+            <textarea id="messageText" placeholder="Type a message..."></textarea>
+            <input type="file" id="photoInput" accept="image/*" style="display: none;">
+            <button id="photoBtn">📷</button>
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

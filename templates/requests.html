@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Friend Requests{% endblock %}
+{% block content %}
+<div class="requests-container">
+    <h2>Pending Friend Requests</h2>
+    <ul>
+        {% for req in requests %}
+        <li>
+            {{ req.sender_username }}
+            <button class="accept-request" data-id="{{ req.id }}">Accept</button>
+            <button class="reject-request" data-id="{{ req.id }}">Reject</button>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('chat') }}">Back to Chat</a>
+</div>
+<script>
+    document.querySelectorAll('.accept-request').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            await fetch(`/accept_request/${id}`, { method: 'POST' });
+            location.reload();
+        });
+    });
+    document.querySelectorAll('.reject-request').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            await fetch(`/reject_request/${id}`, { method: 'POST' });
+            location.reload();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="auth-form">
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div>
+            <label>Username:</label>
+            <input type="text" name="username" required>
+        </div>
+        <div>
+            <label>Password:</label>
+            <input type="password" name="password" required>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+</div>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = new FormData(form);
+        const response = await fetch('/login', {
+            method: 'POST',
+            body: data
+        });
+        const result = await response.json();
+        if (result.success) {
+            // Store user data in sessionStorage (encrypted private key will be decrypted later)
+            sessionStorage.setItem('user_id', result.user_id);
+            sessionStorage.setItem('username', result.username);
+            sessionStorage.setItem('public_key', result.public_key);
+            sessionStorage.setItem('encrypted_private_key', result.encrypted_private_key);
+            window.location.href = '/chat';
+        } else {
+            alert('Login failed: ' + result.error);
+        }
+    });
+</script>
+{% endblock %}
