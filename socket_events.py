@@ -62,15 +62,34 @@ def register_socket_handlers(socketio):
         if not sender_id:
             return
         recipient_id = data['recipient_id']
-        file_id = data['file_id']
+        file_id = data['encrypted_message']          # now using encrypted_message key
         iv = data['iv']
         encrypted_key_self = data['encrypted_key_self']
         encrypted_key_recipient = data['encrypted_key_recipient']
         file_name = data.get('file_name', 'photo')
 
+        models.save_photo_message(
+            owner_id=sender_id,
+            other_id=recipient_id,
+            file_id=file_id,
+            encrypted_key=encrypted_key_self,
+            iv=iv,
+            file_name=file_name,
+            is_sent=True
+        )
+        models.save_photo_message(
+            owner_id=int(recipient_id),
+            other_id=sender_id,
+            file_id=file_id,
+            encrypted_key=encrypted_key_recipient,
+            iv=iv,
+            file_name=file_name,
+            is_sent=False
+        )
+
         sender_msg = {
             'type': 'photo',
-            'file_id': file_id,
+            'encrypted_message': file_id,            # same key as REST
             'encrypted_key': encrypted_key_self,
             'iv': iv,
             'file_name': file_name,
@@ -80,7 +99,7 @@ def register_socket_handlers(socketio):
         }
         recipient_msg = {
             'type': 'photo',
-            'file_id': file_id,
+            'encrypted_message': file_id,            # same key
             'encrypted_key': encrypted_key_recipient,
             'iv': iv,
             'file_name': file_name,
