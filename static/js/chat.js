@@ -4,12 +4,10 @@ let currentFriend = null;
 let privateKey = null;
 let friends = [];
 
-// Mobile sidebar functions
-const menuToggle = document.getElementById('menuToggle');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('sidebarOverlay');
-
+// Mobile sidebar functions (defined early so they're available everywhere)
 function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
     if (sidebar && overlay) {
         sidebar.classList.remove('open');
         overlay.classList.remove('active');
@@ -108,10 +106,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// closeSidebar is already defined globally above
-// But to ensure it's available inside selectFriend, we define it at the top level
-// (already done above)
-
 async function decryptPrivateKey(password) {
     const encryptedPrivateKeyBase64 = sessionStorage.getItem('encrypted_private_key');
     const encryptedPrivateKeyData = Uint8Array.from(atob(encryptedPrivateKeyBase64), c => c.charCodeAt(0));
@@ -184,7 +178,12 @@ async function loadFriends() {
 async function selectFriend(friend) {
     currentFriend = friend;
     document.getElementById('chatHeader').innerText = `Chat with ${friend.username}`;
-    document.getElementById('messageInputContainer').style.display = 'flex';
+    
+    // Force the message input container to be visible
+    const inputContainer = document.getElementById('messageInputContainer');
+    inputContainer.style.display = 'flex';
+    console.log('Message input container display set to flex');
+
     document.getElementById('messages').innerHTML = '';
 
     // Close sidebar on mobile after selecting a friend
