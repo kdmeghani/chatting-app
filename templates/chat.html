@@ -2,7 +2,8 @@
 {% block title %}Chat{% endblock %}
 {% block content %}
 <div class="chat-container">
-    <div class="sidebar">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="sidebar">
         <div class="user-header">
             <h3>Welcome, {{ username }}</h3>
             <button id="logoutBtn">Logout</button>
@@ -19,8 +20,9 @@
         </div>
     </div>
     <div class="chat-area">
-        <div class="chat-header" id="chatHeader">
-            Select a friend to start chatting
+        <div class="chat-header">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <span id="chatHeader">Select a friend to start chatting</span>
         </div>
         <div class="messages" id="messages"></div>
         <div class="typing-indicator" id="typingIndicator"></div>
