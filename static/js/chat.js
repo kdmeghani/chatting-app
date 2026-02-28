@@ -4,6 +4,18 @@ let currentFriend = null;
 let privateKey = null;
 let friends = [];
 
+// Mobile sidebar functions
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+
+function closeSidebar() {
+    if (sidebar && overlay) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
@@ -14,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Decrypt private key using password
-    const password = prompt("Enter your password to decrypt messages:"); // In production, use a proper password input
+    const password = prompt("Enter your password to decrypt messages:");
     if (!password) {
         alert('Password required');
         window.location.href = '/login';
@@ -80,7 +92,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('photoInput').click();
     });
     document.getElementById('photoInput').addEventListener('change', handlePhotoSelected);
+
+    // Mobile sidebar toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    if (menuToggle && sidebar && overlay) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', closeSidebar);
+    }
 });
+
+// closeSidebar is already defined globally above
+// But to ensure it's available inside selectFriend, we define it at the top level
+// (already done above)
 
 async function decryptPrivateKey(password) {
     const encryptedPrivateKeyBase64 = sessionStorage.getItem('encrypted_private_key');
@@ -157,9 +187,16 @@ async function selectFriend(friend) {
     document.getElementById('messageInputContainer').style.display = 'flex';
     document.getElementById('messages').innerHTML = '';
 
+    // Close sidebar on mobile after selecting a friend
+    if (window.innerWidth < 768) {
+        closeSidebar();
+    }
+
+    // Highlight selected friend
     document.querySelectorAll('.friend-item').forEach(el => el.classList.remove('selected'));
     document.querySelector(`.friend-item[data-id="${friend.id}"]`).classList.add('selected');
 
+    // Load messages
     const response = await fetch(`/messages/${friend.id}`);
     const messages = await response.json();
     for (const msg of messages) {
@@ -362,7 +399,7 @@ async function handlePhotoSelected(event) {
 
         socket.emit('send_photo', {
             recipient_id: currentFriend.id,
-            encrypted_message: uploadResult.file_id,   // changed from file_id to encrypted_message
+            encrypted_message: uploadResult.file_id,
             iv: btoa(String.fromCharCode(...iv)),
             encrypted_key_self: btoa(String.fromCharCode(...new Uint8Array(encryptedKeySelf))),
             encrypted_key_recipient: btoa(String.fromCharCode(...new Uint8Array(encryptedKeyRecipient))),
