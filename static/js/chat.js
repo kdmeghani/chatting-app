@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     socket.on('new_photo', async (data) => {
+        console.log('New photo received via socket:', data);
         if (data.friend_id === currentFriend?.id || data.friend_id == sessionStorage.getItem('user_id')) {
             await processPhotoMessage(data);
         }
@@ -208,6 +209,7 @@ async function decryptMessage(encryptedMessageBase64, encryptedKeyBase64, ivBase
 
 async function processPhotoMessage(data) {
     try {
+        console.log('Processing photo message:', data);
         const encryptedKey = Uint8Array.from(atob(data.encrypted_key), c => c.charCodeAt(0));
         const aesKeyBuffer = await crypto.subtle.decrypt(
             { name: "RSA-OAEP" },
@@ -222,8 +224,12 @@ async function processPhotoMessage(data) {
             ["decrypt"]
         );
 
-        const downloadResponse = await fetch(`/download_photo/${data.file_id}`);
-        if (!downloadResponse.ok) throw new Error('Download failed');
+        const fileId = data.encrypted_message; // unified key
+        console.log('Downloading photo:', fileId);
+        const downloadResponse = await fetch(`/download_photo/${fileId}`);
+        if (!downloadResponse.ok) {
+            throw new Error(`Download failed: ${downloadResponse.status}`);
+        }
         const encryptedFileData = await downloadResponse.arrayBuffer();
 
         const iv = Uint8Array.from(atob(data.iv), c => c.charCodeAt(0));
@@ -356,7 +362,7 @@ async function handlePhotoSelected(event) {
 
         socket.emit('send_photo', {
             recipient_id: currentFriend.id,
-            file_id: uploadResult.file_id,
+            encrypted_message: uploadResult.file_id,   // changed from file_id to encrypted_message
             iv: btoa(String.fromCharCode(...iv)),
             encrypted_key_self: btoa(String.fromCharCode(...new Uint8Array(encryptedKeySelf))),
             encrypted_key_recipient: btoa(String.fromCharCode(...new Uint8Array(encryptedKeyRecipient))),
