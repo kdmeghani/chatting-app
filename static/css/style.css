@@ -4,7 +4,7 @@
     box-sizing: border-box;
 }
 
-/* ===== CRITICAL HEIGHT FIX ===== */
+/* ===== HEIGHT CHAIN FIX ===== */
 
 html, body {
     height: 100%;
@@ -14,7 +14,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #1a1a1a;
     color: #e0e0e0;
-    overflow: hidden; /* page itself doesn’t scroll */
+    overflow: hidden;
 }
 
 /* ===== CONTAINER ===== */
@@ -23,16 +23,16 @@ body {
     height: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0;               /* IMPORTANT: no padding */
+    display: flex;            /* IMPORTANT */
 }
 
 /* ===== CHAT LAYOUT ===== */
 
 .chat-container {
+    flex: 1;
     display: flex;
-    height: 100%;
     background: #2d2d2d;
-    border-radius: 8px;
     overflow: hidden;
 }
 
@@ -116,13 +116,11 @@ body {
 
 .messages {
     flex: 1;
-    overflow-y: auto; /* THIS enables scroll */
+    overflow-y: auto;   /* THIS enables scrolling */
     padding: 15px;
     display: flex;
     flex-direction: column;
 }
-
-/* Message bubbles */
 
 .message {
     max-width: 60%;
@@ -150,7 +148,21 @@ body {
     margin-top: 4px;
 }
 
-/* ===== INPUT AREA ===== */
+.message img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+}
+
+.typing-indicator {
+    padding: 5px 15px;
+    font-style: italic;
+    color: #888;
+    min-height: 24px;
+    flex-shrink: 0;
+}
+
+/* ===== MESSAGE INPUT ===== */
 
 .message-input-fixed {
     display: flex;
@@ -181,6 +193,10 @@ body {
     cursor: pointer;
 }
 
+#photoBtn:hover {
+    background: #218838;
+}
+
 #sendBtn {
     padding: 0 20px;
     background: #007bff;
@@ -188,4 +204,8 @@ body {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+
+#sendBtn:hover {
+    background: #0056b3;
 }
