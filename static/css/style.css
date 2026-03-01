@@ -207,17 +207,18 @@ body {
     background: #6c757d;
 }
 
-/* Chat area */
+/* Chat area – simplified flex layout */
 .chat-area {
-    flex: 1;
     display: flex;
     flex-direction: column;
     height: 100vh;
     width: 100%;
     background: #2d2d2d;
+    overflow: hidden;
 }
 
 .chat-header {
+    flex: 0 0 auto;
     padding: 15px;
     background: #1f1f1f;
     border-bottom: 1px solid #3d3d3d;
@@ -242,7 +243,7 @@ body {
 }
 
 .messages {
-    flex: 1;
+    flex: 1 1 auto;
     overflow-y: auto;
     padding: 15px;
     display: flex;
@@ -289,6 +290,7 @@ body {
 }
 
 .typing-indicator {
+    flex: 0 0 auto;
     padding: 5px 15px;
     font-style: italic;
     color: #888;
@@ -296,30 +298,30 @@ body {
     font-size: 13px;
 }
 
-/* Message input - ALWAYS VISIBLE */
+/* Message input – ALWAYS VISIBLE with flex */
 .message-input {
+    flex: 0 0 auto;
     display: flex !important;
-    padding: 15px !important;
+    padding: 10px !important;
     background: #1f1f1f !important;
     border-top: 1px solid #3d3d3d !important;
     width: 100% !important;
-    position: sticky !important;
-    bottom: 0 !important;
-    z-index: 100 !important;
+    box-sizing: border-box !important;
 }
 
 .message-input textarea {
     flex: 1 !important;
-    padding: 10px !important;
+    height: 40px !important;
+    padding: 8px !important;
     background: #3d3d3d !important;
     border: 1px solid #4d4d4d !important;
     color: white !important;
     border-radius: 4px !important;
     resize: none !important;
-    margin-right: 10px !important;
-    min-height: 40px !important;
+    margin-right: 8px !important;
     font-size: 14px !important;
     font-family: inherit !important;
+    box-sizing: border-box !important;
 }
 
 .message-input textarea:disabled {
@@ -328,15 +330,13 @@ body {
 }
 
 #photoBtn, #sendBtn {
+    height: 40px !important;
     padding: 0 15px !important;
-    background: #28a745 !important;
-    color: white !important;
     border: none !important;
     border-radius: 4px !important;
-    cursor: pointer !important;
     font-size: 16px !important;
-    min-width: 50px !important;
-    height: 40px !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
 }
 
 #photoBtn:disabled, #sendBtn:disabled {
@@ -346,11 +346,13 @@ body {
 
 #photoBtn {
     background: #28a745 !important;
+    color: white !important;
     margin-right: 5px !important;
 }
 
 #sendBtn {
     background: #007bff !important;
+    color: white !important;
 }
 
 #photoBtn:hover:not(:disabled) {
@@ -392,62 +394,3 @@ body {
         display: none !important;
     }
 }
-
-/* ULTIMATE FIX - FORCE MESSAGE INPUT VISIBLE */
-#messageInputContainer {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    min-height: 60px !important;
-    background: #1f1f1f !important;
-    border-top: 2px solid #ff0000 !important; /* bright red border to see it */
-    padding: 10px !important;
-    position: sticky !important;
-    bottom: 0 !important;
-    z-index: 9999 !important;
-}
-
-#messageText {
-    display: block !important;
-    height: 40px !important;
-    background: #3d3d3d !important;
-    border: 1px solid #4d4d4d !important;
-    color: white !important;
-    border-radius: 4px !important;
-    padding: 8px !important;
-    flex: 1 !important;
-    margin-right: 8px !important;
-}
-
-#photoBtn, #sendBtn {
-    display: inline-block !important;
-    height: 40px !important;
-    padding: 0 15px !important;
-    border: none !important;
-    border-radius: 4px !important;
-    font-size: 16px !important;
-}
-
-#photoBtn {
-    background: #28a745 !important;
-    margin-right: 5px !important;
-}
-
-#sendBtn {
-    background: #007bff !important;
-}
-
-/* Ensure chat area takes full height and allows scrolling */
-.chat-area {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100vh !important;
-    overflow: hidden !important;
-}
-
-.messages {
-    flex: 1 !important;
-    overflow-y: auto !important;
-}
-
