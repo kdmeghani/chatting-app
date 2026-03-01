@@ -4,15 +4,20 @@
     box-sizing: border-box;
 }
 
-/* ================= BODY ================= */
+/* ===== CRITICAL HEIGHT FIX ===== */
+
+html, body {
+    height: 100%;
+}
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #1a1a1a;
     color: #e0e0e0;
-    height: 100dvh; /* Mobile-safe height */
-    overflow: hidden;
+    overflow: hidden; /* page itself doesn’t scroll */
 }
+
+/* ===== CONTAINER ===== */
 
 .container {
     height: 100%;
@@ -21,61 +26,7 @@ body {
     padding: 20px;
 }
 
-/* ================= AUTH FORMS ================= */
-
-.auth-form {
-    max-width: 400px;
-    margin: 50px auto;
-    background: #2d2d2d;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
-
-.auth-form h2 {
-    margin-bottom: 20px;
-    color: #fff;
-}
-
-.auth-form div {
-    margin-bottom: 15px;
-}
-
-.auth-form label {
-    display: block;
-    margin-bottom: 5px;
-    color: #b0b0b0;
-}
-
-.auth-form input {
-    width: 100%;
-    padding: 10px;
-    background: #3d3d3d;
-    border: 1px solid #4d4d4d;
-    color: #fff;
-    border-radius: 4px;
-}
-
-.auth-form button {
-    width: 100%;
-    padding: 10px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.auth-form button:hover {
-    background: #0056b3;
-}
-
-.auth-form a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-/* ================= CHAT LAYOUT ================= */
+/* ===== CHAT LAYOUT ===== */
 
 .chat-container {
     display: flex;
@@ -85,7 +36,7 @@ body {
     overflow: hidden;
 }
 
-/* ================= SIDEBAR ================= */
+/* ===== SIDEBAR ===== */
 
 .sidebar {
     width: 300px;
@@ -103,15 +54,6 @@ body {
     align-items: center;
 }
 
-.user-header button {
-    padding: 5px 10px;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
 .search {
     padding: 10px;
     border-bottom: 1px solid #3d3d3d;
@@ -126,34 +68,6 @@ body {
     border-radius: 4px;
 }
 
-#searchResults {
-    margin-top: 5px;
-    max-height: 150px;
-    overflow-y: auto;
-    background: #333;
-    border-radius: 4px;
-}
-
-.search-result-item {
-    padding: 8px;
-    cursor: pointer;
-    border-bottom: 1px solid #444;
-}
-
-.search-result-item:hover {
-    background: #404040;
-}
-
-.friend-requests {
-    padding: 10px;
-    border-bottom: 1px solid #3d3d3d;
-}
-
-.friend-requests a {
-    color: #007bff;
-    text-decoration: none;
-}
-
 .friends-list {
     flex: 1;
     overflow-y: auto;
@@ -163,9 +77,6 @@ body {
     padding: 12px 15px;
     border-bottom: 1px solid #3d3d3d;
     cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .friend-item:hover {
@@ -176,20 +87,7 @@ body {
     background: #404040;
 }
 
-.online-status {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #28a745;
-    display: inline-block;
-    margin-right: 8px;
-}
-
-.offline {
-    background: #6c757d;
-}
-
-/* ================= CHAT AREA ================= */
+/* ===== CHAT AREA ===== */
 
 .chat-area {
     flex: 1;
@@ -204,25 +102,27 @@ body {
     padding: 15px;
     background: #1f1f1f;
     border-bottom: 1px solid #3d3d3d;
-    font-weight: bold;
     flex-shrink: 0;
 }
 
-/* Messages */
+/* ===== MESSAGES ===== */
 
 .messages-wrapper {
     flex: 1;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .messages {
     flex: 1;
+    overflow-y: auto; /* THIS enables scroll */
     padding: 15px;
     display: flex;
     flex-direction: column;
 }
+
+/* Message bubbles */
 
 .message {
     max-width: 60%;
@@ -250,22 +150,7 @@ body {
     margin-top: 4px;
 }
 
-.message img {
-    max-width: 200px;
-    max-height: 200px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.typing-indicator {
-    padding: 5px 15px;
-    font-style: italic;
-    color: #888;
-    min-height: 24px;
-    flex-shrink: 0;
-}
-
-/* ================= MESSAGE INPUT ================= */
+/* ===== INPUT AREA ===== */
 
 .message-input-fixed {
     display: flex;
@@ -286,7 +171,16 @@ body {
     margin-right: 10px;
 }
 
-#photoBtn,
+#photoBtn {
+    padding: 0 10px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
 #sendBtn {
     padding: 0 20px;
     background: #007bff;
@@ -294,17 +188,4 @@ body {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-}
-
-#photoBtn {
-    background: #28a745;
-    margin-right: 5px;
-}
-
-#photoBtn:hover {
-    background: #218838;
-}
-
-#sendBtn:hover {
-    background: #0056b3;
 }
