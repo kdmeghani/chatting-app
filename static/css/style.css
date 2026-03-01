@@ -357,3 +357,68 @@ body {
         display: none !important;
     }
 }
+
+/* Force message input box to be visible */
+#messageInputContainer {
+    display: flex !important;
+    background: #1f1f1f !important;
+    border-top: 1px solid #3d3d3d !important;
+    padding: 15px !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    z-index: 100 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 60px !important;
+}
+
+#messageText {
+    flex: 1 !important;
+    padding: 10px !important;
+    background: #3d3d3d !important;
+    border: 1px solid #4d4d4d !important;
+    color: white !important;
+    border-radius: 4px !important;
+    resize: none !important;
+    margin-right: 10px !important;
+    height: 40px !important;
+    display: block !important;
+}
+
+#photoBtn, #sendBtn {
+    display: inline-block !important;
+    height: 40px !important;
+    padding: 0 15px !important;
+    border: none !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+}
+
+#photoBtn {
+    background: #28a745 !important;
+    color: white !important;
+    margin-right: 5px !important;
+}
+
+#sendBtn {
+    background: #007bff !important;
+    color: white !important;
+}
+
+/* Ensure chat area takes full height */
+.chat-area {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    width: 100% !important;
+}
+
+.messages {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 15px !important;
+}
+
