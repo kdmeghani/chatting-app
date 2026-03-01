@@ -392,3 +392,62 @@ body {
         display: none !important;
     }
 }
+
+/* ULTIMATE FIX - FORCE MESSAGE INPUT VISIBLE */
+#messageInputContainer {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 60px !important;
+    background: #1f1f1f !important;
+    border-top: 2px solid #ff0000 !important; /* bright red border to see it */
+    padding: 10px !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 9999 !important;
+}
+
+#messageText {
+    display: block !important;
+    height: 40px !important;
+    background: #3d3d3d !important;
+    border: 1px solid #4d4d4d !important;
+    color: white !important;
+    border-radius: 4px !important;
+    padding: 8px !important;
+    flex: 1 !important;
+    margin-right: 8px !important;
+}
+
+#photoBtn, #sendBtn {
+    display: inline-block !important;
+    height: 40px !important;
+    padding: 0 15px !important;
+    border: none !important;
+    border-radius: 4px !important;
+    font-size: 16px !important;
+}
+
+#photoBtn {
+    background: #28a745 !important;
+    margin-right: 5px !important;
+}
+
+#sendBtn {
+    background: #007bff !important;
+}
+
+/* Ensure chat area takes full height and allows scrolling */
+.chat-area {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+}
+
+.messages {
+    flex: 1 !important;
+    overflow-y: auto !important;
+}
+
