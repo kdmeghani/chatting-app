@@ -81,6 +81,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load friends
     await loadFriends();
 
+    // Disable input fields initially (until a friend is selected)
+    document.getElementById('messageText').disabled = true;
+    document.getElementById('photoBtn').disabled = true;
+    document.getElementById('sendBtn').disabled = true;
+
     // Setup event listeners
     document.getElementById('logoutBtn').addEventListener('click', logout);
     document.getElementById('searchInput').addEventListener('input', searchUsers);
@@ -179,7 +184,12 @@ async function selectFriend(friend) {
     currentFriend = friend;
     document.getElementById('chatHeader').innerText = `Chat with ${friend.username}`;
     
-    // Force the message input container to be visible
+    // Enable input fields
+    document.getElementById('messageText').disabled = false;
+    document.getElementById('photoBtn').disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+
+    // Ensure input container is visible (CSS already forces it, but just in case)
     const inputContainer = document.getElementById('messageInputContainer');
     inputContainer.style.display = 'flex';
     console.log('Message input container display set to flex');
