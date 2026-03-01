@@ -14,6 +14,19 @@ function closeSidebar() {
     }
 }
 
+// Emergency fix to force input container visible
+function forceInputVisible() {
+    const inputContainer = document.getElementById('messageInputContainer');
+    if (inputContainer) {
+        inputContainer.style.setProperty('display', 'flex', 'important');
+        inputContainer.style.setProperty('visibility', 'visible', 'important');
+        inputContainer.style.setProperty('opacity', '1', 'important');
+        console.log('Input container forced visible');
+    } else {
+        console.error('Input container not found in DOM');
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
@@ -85,6 +98,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('messageText').disabled = true;
     document.getElementById('photoBtn').disabled = true;
     document.getElementById('sendBtn').disabled = true;
+
+    // Emergency: force input container visible on all devices
+    forceInputVisible();
 
     // Setup event listeners
     document.getElementById('logoutBtn').addEventListener('click', logout);
@@ -191,8 +207,9 @@ async function selectFriend(friend) {
 
     // Ensure input container is visible (CSS already forces it, but just in case)
     const inputContainer = document.getElementById('messageInputContainer');
-    inputContainer.style.display = 'flex';
-    console.log('Message input container display set to flex');
+    if (inputContainer) {
+        inputContainer.style.setProperty('display', 'flex', 'important');
+    }
 
     document.getElementById('messages').innerHTML = '';
 
