@@ -26,11 +26,13 @@
         </div>
         <div class="messages" id="messages"></div>
         <div class="typing-indicator" id="typingIndicator"></div>
-        <div class="message-input" id="messageInputContainer" style="display: none;">
-            <textarea id="messageText" placeholder="Type a message..."></textarea>
+        
+        <!-- Message input section - ALWAYS visible but enabled only when friend selected -->
+        <div class="message-input" id="messageInputContainer">
+            <textarea id="messageText" placeholder="Type a message..." disabled></textarea>
             <input type="file" id="photoInput" accept="image/*" style="display: none;">
-            <button id="photoBtn">📷</button>
-            <button id="sendBtn">Send</button>
+            <button id="photoBtn" disabled>📷</button>
+            <button id="sendBtn" disabled>Send</button>
         </div>
     </div>
 </div>
