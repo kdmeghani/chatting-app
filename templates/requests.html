@@ -1,18 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Friend Requests{% endblock %}
 {% block content %}
-<div class="requests-container">
-    <h2>Pending Friend Requests</h2>
-    <ul>
+<div class="requests-wrapper">
+    <div class="requests-header">
+        <a href="{{ url_for('chat') }}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h2>Friend Requests</h2>
+    </div>
+    <ul class="requests-list">
         {% for req in requests %}
         <li>
-            {{ req.sender_username }}
-            <button class="accept-request" data-id="{{ req.id }}">Accept</button>
-            <button class="reject-request" data-id="{{ req.id }}">Reject</button>
+            <span>{{ req.sender_username }}</span>
+            <div>
+                <button class="accept-request" data-id="{{ req.id }}"><i class="fas fa-check"></i></button>
+                <button class="reject-request" data-id="{{ req.id }}"><i class="fas fa-times"></i></button>
+            </div>
         </li>
         {% endfor %}
     </ul>
-    <a href="{{ url_for('chat') }}">Back to Chat</a>
 </div>
 <script>
     document.querySelectorAll('.accept-request').forEach(btn => {
