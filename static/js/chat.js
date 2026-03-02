@@ -1,4 +1,3 @@
-// Ultra-simple chat.js
 let socket;
 let currentFriend = null;
 let privateKey = null;
@@ -49,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${data.is_sent ? 'sent' : 'received'}`;
-            msgDiv.innerHTML = `<img src="${url}" style="max-width:200px; border-radius:8px;">`;
+            msgDiv.innerHTML = `<img src="${url}" style="max-width:200px; border-radius:8px;"><div class="time">${new Date().toLocaleTimeString()}</div>`;
             document.getElementById('messages').appendChild(msgDiv);
             document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
         }
@@ -57,28 +56,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadFriends();
 
-    // Enable/disable input based on friend selection
+    // Initially disabled
     document.getElementById('messageText').disabled = true;
     document.getElementById('photoBtn').disabled = true;
     document.getElementById('sendBtn').disabled = true;
 
     // Event listeners
-    document.getElementById('sendBtn').onclick = sendMessage;
-    document.getElementById('photoBtn').onclick = () => document.getElementById('photoInput').click();
-    document.getElementById('photoInput').onchange = handlePhotoSelected;
-    document.getElementById('logoutBtn').onclick = logout;
-    document.getElementById('menuToggle').onclick = () => {
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('photoBtn').addEventListener('click', () => document.getElementById('photoInput').click());
+    document.getElementById('photoInput').addEventListener('change', handlePhotoSelected);
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('menuToggle').addEventListener('click', () => {
         document.getElementById('sidebar').classList.add('open');
         document.getElementById('sidebarOverlay').classList.add('active');
-    };
-    document.getElementById('sidebarOverlay').onclick = () => {
+    });
+    document.getElementById('sidebarOverlay').addEventListener('click', () => {
         document.getElementById('sidebar').classList.remove('open');
         document.getElementById('sidebarOverlay').classList.remove('active');
-    };
+    });
     document.getElementById('searchInput').addEventListener('input', searchUsers);
 });
 
-// Core functions
 async function decryptPrivateKey(password) {
     const data = Uint8Array.from(atob(sessionStorage.getItem('encrypted_private_key')), c => c.charCodeAt(0));
     const salt = data.slice(0, 16);
@@ -118,7 +116,7 @@ async function loadFriends() {
     list.innerHTML = '';
     friends.forEach(f => {
         const div = document.createElement('div');
-        div.style.cssText = 'padding:10px; border-bottom:1px solid #2a3942; cursor:pointer; color:white;';
+        div.style.cssText = 'padding: 12px; border-bottom: 1px solid #2a3942; cursor: pointer; color: white;';
         div.innerText = f.username;
         div.onclick = () => selectFriend(f);
         list.appendChild(div);
@@ -143,8 +141,6 @@ async function selectFriend(friend) {
         if (msg.type === 'text') {
             const text = await decryptMessage(msg.encrypted_message, msg.encrypted_key, msg.iv);
             addMessage(text, msg.is_sent);
-        } else {
-            // handle photo – simplified, can add later
         }
     }
 }
@@ -152,7 +148,7 @@ async function selectFriend(friend) {
 function addMessage(text, isSent) {
     const div = document.createElement('div');
     div.className = `message ${isSent ? 'sent' : 'received'}`;
-    div.innerHTML = `${text}<div style="font-size:11px; color:#8696a0; margin-top:4px;">${new Date().toLocaleTimeString()}</div>`;
+    div.innerHTML = `${text}<div class="time">${new Date().toLocaleTimeString()}</div>`;
     document.getElementById('messages').appendChild(div);
     document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
 }
@@ -186,8 +182,40 @@ async function sendMessage() {
 }
 
 async function handlePhotoSelected(e) {
-    // Simplified photo sending – omitted for brevity but can be added
-    alert('Photo sending not implemented in this minimal version');
+    const file = e.target.files[0];
+    if (!file || !currentFriend) return;
+    
+    const data = await file.arrayBuffer();
+    const aesKey = await crypto.subtle.generateKey({ name: "AES-CBC", length: 256 }, true, ["encrypt", "decrypt"]);
+    const iv = crypto.getRandomValues(new Uint8Array(16));
+    const enc = await crypto.subtle.encrypt({ name: "AES-CBC", iv }, aesKey, data);
+    const raw = await crypto.subtle.exportKey("raw", aesKey);
+    
+    const myPub = sessionStorage.getItem('public_key');
+    const theirPub = await (await fetch(`/public_key/${currentFriend.id}`)).json().then(d => d.public_key);
+    
+    const myKey = await encryptRSA(raw, myPub);
+    const theirKey = await encryptRSA(raw, theirPub);
+    
+    const formData = new FormData();
+    formData.append('recipient_id', currentFriend.id);
+    formData.append('encrypted_key_self', btoa(String.fromCharCode(...new Uint8Array(myKey))));
+    formData.append('encrypted_key_recipient', btoa(String.fromCharCode(...new Uint8Array(theirKey))));
+    formData.append('iv', btoa(String.fromCharCode(...iv)));
+    formData.append('filename', file.name);
+    formData.append('file', new Blob([enc]));
+    
+    const upload = await fetch('/upload_photo', { method: 'POST', body: formData });
+    const result = await upload.json();
+    
+    socket.emit('send_photo', {
+        recipient_id: currentFriend.id,
+        encrypted_message: result.file_id,
+        iv: btoa(String.fromCharCode(...iv)),
+        encrypted_key_self: btoa(String.fromCharCode(...new Uint8Array(myKey))),
+        encrypted_key_recipient: btoa(String.fromCharCode(...new Uint8Array(theirKey))),
+        file_name: file.name
+    });
 }
 
 async function searchUsers() {
@@ -199,11 +227,11 @@ async function searchUsers() {
     results.innerHTML = '';
     users.forEach(u => {
         const div = document.createElement('div');
-        div.style.cssText = 'padding:8px; background:#202c33; margin:2px 0; cursor:pointer;';
+        div.style.cssText = 'padding: 8px; background: #202c33; margin: 2px 0; cursor: pointer; color: white;';
         div.innerText = u.username;
         div.onclick = async () => {
             await fetch('/send_request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipient_id: u.id }) });
-            alert('Request sent');
+            alert('Friend request sent');
             document.getElementById('searchInput').value = '';
             results.innerHTML = '';
         };
