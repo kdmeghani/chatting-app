@@ -1,28 +1,32 @@
 {% extends "base.html" %}
 {% block title %}Register{% endblock %}
 {% block content %}
-<div class="auth-form">
-    <h2>Register</h2>
-    <form id="registerForm">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <div>
-            <label>Username:</label>
-            <input type="text" name="username" required>
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-whatsapp"></i>
+            <h2>Create Account</h2>
         </div>
-        <div>
-            <label>Email:</label>
-            <input type="email" name="email" required>
-        </div>
-        <div>
-            <label>Password:</label>
-            <input type="password" name="password" required>
-        </div>
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+        <form id="registerForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="btn-register">Register</button>
+        </form>
+        <p class="auth-footer">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+    </div>
 </div>
 <script>
-    // Generate RSA keys and encrypt private key with password
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const form = e.target;
@@ -30,7 +34,6 @@
         const email = form.email.value;
         const password = form.password.value;
 
-        // Generate RSA key pair
         const keyPair = await crypto.subtle.generateKey(
             {
                 name: "RSA-OAEP",
@@ -42,15 +45,12 @@
             ["encrypt", "decrypt"]
         );
 
-        // Export public key as PEM
         const publicKeySpki = await crypto.subtle.exportKey("spki", keyPair.publicKey);
         const publicKeyPem = "-----BEGIN PUBLIC KEY-----\n" + btoa(String.fromCharCode(...new Uint8Array(publicKeySpki))) + "\n-----END PUBLIC KEY-----";
 
-        // Export private key as PKCS8
         const privateKeyPkcs8 = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
         const privateKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(privateKeyPkcs8)));
 
-        // Derive key from password using PBKDF2
         const passwordKey = await crypto.subtle.importKey(
             "raw",
             new TextEncoder().encode(password),
@@ -73,7 +73,6 @@
             ["encrypt", "decrypt"]
         );
 
-        // Encrypt private key with AES-GCM
         const iv = crypto.getRandomValues(new Uint8Array(12));
         const encryptedPrivateKey = await crypto.subtle.encrypt(
             { name: "AES-GCM", iv: iv },
@@ -81,14 +80,12 @@
             new TextEncoder().encode(privateKeyBase64)
         );
 
-        // Combine salt + iv + ciphertext
         const encryptedPrivateKeyData = new Uint8Array(salt.length + iv.length + encryptedPrivateKey.byteLength);
         encryptedPrivateKeyData.set(salt, 0);
         encryptedPrivateKeyData.set(iv, salt.length);
         encryptedPrivateKeyData.set(new Uint8Array(encryptedPrivateKey), salt.length + iv.length);
         const encryptedPrivateKeyBase64 = btoa(String.fromCharCode(...encryptedPrivateKeyData));
 
-        // Send to server
         const formData = new FormData();
         formData.append('username', username);
         formData.append('email', email);
