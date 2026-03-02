@@ -4,28 +4,162 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #111b21; color: #e9edef; font-family: sans-serif; height: 100vh; overflow: hidden; }
-        .app { height: 100vh; display: flex; flex-direction: column; }
-        .header { background: #202c33; padding: 12px; display: flex; align-items: center; }
-        .header button { background: none; border: none; color: white; font-size: 24px; margin-right: 15px; }
-        .header span { font-size: 18px; color: white; }
-        .messages { flex: 1; overflow-y: auto; padding: 10px; background: #0b141a; }
-        .message { max-width: 70%; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; word-wrap: break-word; }
-        .sent { align-self: flex-end; background: #005c4b; margin-left: auto; }
-        .received { align-self: flex-start; background: #202c33; }
-        .input-area { background: #202c33; padding: 10px; display: flex; align-items: center; }
-        .input-area textarea { flex: 1; background: #2a3942; border: none; border-radius: 8px; padding: 10px; color: white; resize: none; height: 40px; margin-right: 8px; }
-        .input-area button { background: #007bff; border: none; border-radius: 8px; padding: 8px 15px; color: white; font-weight: bold; }
-        .input-area button#photoBtn { background: #28a745; margin-right: 5px; }
-        .sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #111b21; transition: left 0.3s; z-index: 10; overflow-y: auto; }
-        .sidebar.open { left: 0; }
-        .sidebar-header { background: #202c33; padding: 15px; display: flex; justify-content: space-between; }
-        .sidebar input { width: 100%; padding: 8px; background: #202c33; border: none; border-radius: 4px; color: white; margin-bottom: 10px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 5; }
-        .overlay.active { display: block; }
+        html, body { height: 100%; overflow: hidden; background: #111b21; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #e9edef; }
+        
+        .app { 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            background: #111b21;
+            position: relative;
+        }
+        
+        .header { 
+            background: #202c33; 
+            padding: 15px; 
+            display: flex; 
+            align-items: center; 
+            height: 60px;
+        }
+        
+        .header button { 
+            background: none; 
+            border: none; 
+            color: white; 
+            font-size: 24px; 
+            margin-right: 15px; 
+        }
+        
+        .messages-container { 
+            flex: 1; 
+            overflow-y: auto; 
+            background: #0b141a; 
+            padding: 10px;
+        }
+        
+        .message { 
+            max-width: 70%; 
+            margin-bottom: 8px; 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            word-wrap: break-word; 
+            font-size: 14px;
+        }
+        
+        .sent { 
+            background: #005c4b; 
+            margin-left: auto; 
+        }
+        
+        .received { 
+            background: #202c33; 
+            margin-right: auto; 
+        }
+        
+        .time { 
+            font-size: 11px; 
+            color: #8696a0; 
+            margin-top: 4px; 
+        }
+        
+        .input-wrapper { 
+            background: #202c33; 
+            padding: 10px; 
+            display: flex; 
+            align-items: center; 
+            height: 60px;
+            border-top: 1px solid #2a3942;
+        }
+        
+        .input-wrapper textarea { 
+            flex: 1; 
+            background: #2a3942; 
+            border: none; 
+            border-radius: 8px; 
+            padding: 10px; 
+            color: white; 
+            height: 40px; 
+            margin-right: 8px; 
+            resize: none; 
+            font-family: inherit;
+        }
+        
+        .input-wrapper button { 
+            height: 40px; 
+            padding: 0 15px; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            margin-left: 5px; 
+        }
+        
+        #photoBtn { 
+            background: #28a745; 
+            color: white; 
+        }
+        
+        #sendBtn { 
+            background: #007bff; 
+            color: white; 
+        }
+        
+        .input-wrapper textarea:disabled,
+        .input-wrapper button:disabled { 
+            opacity: 0.5; 
+        }
+        
+        .sidebar { 
+            position: fixed; 
+            top: 0; 
+            left: -300px; 
+            width: 280px; 
+            height: 100%; 
+            background: #111b21; 
+            transition: left 0.3s; 
+            z-index: 1000; 
+            overflow-y: auto; 
+        }
+        
+        .sidebar.open { 
+            left: 0; 
+        }
+        
+        .sidebar-header { 
+            background: #202c33; 
+            padding: 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .sidebar input { 
+            width: 100%; 
+            padding: 8px; 
+            background: #202c33; 
+            border: none; 
+            border-radius: 4px; 
+            color: white; 
+            margin: 10px 0; 
+        }
+        
+        .overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 999; 
+        }
+        
+        .overlay.active { 
+            display: block; 
+        }
     </style>
 </head>
 <body>
@@ -34,8 +168,10 @@
         <button id="menuToggle">☰</button>
         <span id="chatHeader">Select a chat</span>
     </div>
-    <div class="messages" id="messages"></div>
-    <div class="input-area" id="inputArea">
+    
+    <div class="messages-container" id="messages"></div>
+    
+    <div class="input-wrapper" id="inputArea">
         <textarea id="messageText" placeholder="Type a message" disabled></textarea>
         <input type="file" id="photoInput" accept="image/*" style="display: none;">
         <button id="photoBtn" disabled>📷</button>
@@ -46,14 +182,16 @@
 <div class="overlay" id="sidebarOverlay"></div>
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <span style="color:white; font-weight:bold;">{{ username }}</span>
+        <span style="color: white; font-weight: bold;">{{ username }}</span>
         <button id="logoutBtn" style="background:#dc3545; border:none; border-radius:4px; padding:5px 10px; color:white;">Logout</button>
     </div>
-    <div style="padding:10px;">
+    <div style="padding: 10px;">
         <input type="text" id="searchInput" placeholder="Search users...">
         <div id="searchResults"></div>
-        <div style="margin-top:10px;"><a href="{{ url_for('list_requests') }}" style="color:#00a884;">Friend Requests</a></div>
-        <div id="friendsList" style="margin-top:15px;"></div>
+        <div style="margin: 10px 0;">
+            <a href="{{ url_for('list_requests') }}" style="color: #00a884; text-decoration: none;">Friend Requests</a>
+        </div>
+        <div id="friendsList"></div>
     </div>
 </div>
 
