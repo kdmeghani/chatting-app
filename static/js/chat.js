@@ -4,7 +4,7 @@ let currentFriend = null;
 let privateKey = null;
 let friends = [];
 
-// Mobile sidebar functions (defined early so they're available everywhere)
+// Mobile sidebar functions
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
@@ -16,7 +16,7 @@ function closeSidebar() {
 
 // Emergency fix to force input container visible
 function forceInputVisible() {
-    const inputContainer = document.getElementById('messageInputContainer');
+    const inputContainer = document.querySelector('.message-input-container');
     if (inputContainer) {
         inputContainer.style.setProperty('display', 'flex', 'important');
         inputContainer.style.setProperty('visibility', 'visible', 'important');
@@ -27,16 +27,14 @@ function forceInputVisible() {
     }
 }
 
-// Initialize on page load
+// Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if user is logged in
     const userId = sessionStorage.getItem('user_id');
     if (!userId) {
         window.location.href = '/login';
         return;
     }
 
-    // Decrypt private key using password
     const password = prompt("Enter your password to decrypt messages:");
     if (!password) {
         alert('Password required');
@@ -54,7 +52,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Connect to Socket.IO
     socket = io();
 
     socket.on('connect', () => {
@@ -69,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     displayMessage({
                         text: decrypted,
                         isSent: data.is_sent,
-                        timestamp: new Date().toLocaleTimeString()
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     });
                 }
             } catch (e) {
@@ -91,15 +88,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Load friends
     await loadFriends();
 
-    // Disable input fields initially (until a friend is selected)
+    // Disable input fields initially
     document.getElementById('messageText').disabled = true;
+    document.getElementById('photoBtn').classList.add('disabled');
     document.getElementById('photoBtn').disabled = true;
+    document.getElementById('sendBtn').classList.add('disabled');
     document.getElementById('sendBtn').disabled = true;
 
-    // Emergency: force input container visible on all devices
     forceInputVisible();
 
     // Setup event listeners
@@ -108,7 +105,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('sendBtn').addEventListener('click', sendMessage);
     document.getElementById('messageText').addEventListener('input', handleTyping);
     document.getElementById('photoBtn').addEventListener('click', () => {
-        document.getElementById('photoInput').click();
+        if (!document.getElementById('photoBtn').disabled) {
+            document.getElementById('photoInput').click();
+        }
     });
     document.getElementById('photoInput').addEventListener('change', handlePhotoSelected);
 
@@ -127,6 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Crypto functions (unchanged)
 async function decryptPrivateKey(password) {
     const encryptedPrivateKeyBase64 = sessionStorage.getItem('encrypted_private_key');
     const encryptedPrivateKeyData = Uint8Array.from(atob(encryptedPrivateKeyBase64), c => c.charCodeAt(0));
@@ -174,73 +174,6 @@ async function decryptPrivateKey(password) {
         true,
         ["decrypt"]
     );
-}
-
-async function loadFriends() {
-    const response = await fetch('/friends');
-    friends = await response.json();
-    const friendsList = document.getElementById('friendsList');
-    friendsList.innerHTML = '';
-    friends.forEach(friend => {
-        const div = document.createElement('div');
-        div.className = 'friend-item';
-        div.dataset.id = friend.id;
-        div.innerHTML = `
-            <span>
-                <span class="online-status ${friend.online ? '' : 'offline'}"></span>
-                ${friend.username}
-            </span>
-        `;
-        div.addEventListener('click', () => selectFriend(friend));
-        friendsList.appendChild(div);
-    });
-}
-
-async function selectFriend(friend) {
-    currentFriend = friend;
-    document.getElementById('chatHeader').innerText = `Chat with ${friend.username}`;
-    
-    // Enable input fields
-    document.getElementById('messageText').disabled = false;
-    document.getElementById('photoBtn').disabled = false;
-    document.getElementById('sendBtn').disabled = false;
-
-    // Ensure input container is visible (CSS already forces it, but just in case)
-    const inputContainer = document.getElementById('messageInputContainer');
-    if (inputContainer) {
-        inputContainer.style.setProperty('display', 'flex', 'important');
-    }
-
-    document.getElementById('messages').innerHTML = '';
-
-    // Close sidebar on mobile after selecting a friend
-    if (window.innerWidth < 768) {
-        closeSidebar();
-    }
-
-    // Highlight selected friend
-    document.querySelectorAll('.friend-item').forEach(el => el.classList.remove('selected'));
-    document.querySelector(`.friend-item[data-id="${friend.id}"]`).classList.add('selected');
-
-    // Load messages
-    const response = await fetch(`/messages/${friend.id}`);
-    const messages = await response.json();
-    for (const msg of messages) {
-        try {
-            if (msg.type === 'text') {
-                const decrypted = await decryptMessage(msg.encrypted_message, msg.encrypted_key, msg.iv);
-                displayMessage({
-                    text: decrypted,
-                    isSent: msg.is_sent,
-                    timestamp: new Date(msg.timestamp).toLocaleTimeString()
-                });
-            } else if (msg.type === 'photo') {
-                await processPhotoMessage(msg);
-            }
-        } catch (e) {
-            console.error('Failed to decrypt message', e);
-        }
-    }
 }
 
 async function decryptMessage(encryptedMessageBase64, encryptedKeyBase64, ivBase64) {
@@ -309,35 +242,60 @@ async function processPhotoMessage(data) {
             url: url,
             fileName: data.file_name,
             isSent: data.is_sent,
-            timestamp: new Date().toLocaleTimeString()
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
     } catch (e) {
         console.error('Failed to process photo:', e);
     }
 }
 
-function displayMessage(msg) {
-    const messagesDiv = document.getElementById('messages');
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${msg.isSent ? 'sent' : 'received'}`;
-    msgDiv.innerHTML = `
-        <div>${msg.text}</div>
-        <div class="message-time">${msg.timestamp}</div>
-    `;
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+async function encryptAesKeyWithRsa(aesKeyRaw, publicKeyPem) {
+    function pemToArrayBuffer(pem) {
+        const header = "-----BEGIN PUBLIC KEY-----";
+        const footer = "-----END PUBLIC KEY-----";
+        const start = pem.indexOf(header) + header.length;
+        const end = pem.indexOf(footer, start);
+        let pemContents = pem.substring(start, end);
+        pemContents = pemContents.replace(/\s/g, '');
+        const binaryString = atob(pemContents);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+
+    try {
+        const publicKeyBuffer = pemToArrayBuffer(publicKeyPem);
+        const publicKey = await crypto.subtle.importKey(
+            "spki",
+            publicKeyBuffer,
+            {
+                name: "RSA-OAEP",
+                hash: "SHA-256"
+            },
+            false,
+            ["encrypt"]
+        );
+
+        return await crypto.subtle.encrypt(
+            { name: "RSA-OAEP" },
+            publicKey,
+            aesKeyRaw
+        );
+    } catch (e) {
+        console.error('RSA encryption failed:', e);
+        throw e;
+    }
 }
 
-function displayPhoto(photo) {
-    const messagesDiv = document.getElementById('messages');
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${photo.isSent ? 'sent' : 'received'}`;
-    msgDiv.innerHTML = `
-        <img src="${photo.url}" alt="Photo" style="max-width: 200px; max-height: 200px; border-radius: 8px;" onclick="window.open(this.src)">
-        <div class="message-time">${photo.timestamp}</div>
-    `;
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+async function getPublicKeyForUser(userId) {
+    const response = await fetch(`/public_key/${userId}`);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch public key: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.public_key;
 }
 
 async function sendMessage() {
@@ -439,53 +397,112 @@ async function handlePhotoSelected(event) {
     }
 }
 
-async function encryptAesKeyWithRsa(aesKeyRaw, publicKeyPem) {
-    function pemToArrayBuffer(pem) {
-        const header = "-----BEGIN PUBLIC KEY-----";
-        const footer = "-----END PUBLIC KEY-----";
-        const start = pem.indexOf(header) + header.length;
-        const end = pem.indexOf(footer, start);
-        let pemContents = pem.substring(start, end);
-        pemContents = pemContents.replace(/\s/g, '');
-        const binaryString = atob(pemContents);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
+function displayMessage(msg) {
+    const messagesDiv = document.getElementById('messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${msg.isSent ? 'sent' : 'received'}`;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.innerHTML = `
+        ${msg.text}
+        <span class="message-time">${msg.timestamp}</span>
+        ${msg.isSent ? '<i class="fas fa-check message-status"></i>' : ''}
+    `;
+    
+    msgDiv.appendChild(bubble);
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function displayPhoto(photo) {
+    const messagesDiv = document.getElementById('messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${photo.isSent ? 'sent' : 'received'}`;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.innerHTML = `
+        <img src="${photo.url}" alt="Photo" class="message-image" onclick="window.open(this.src)">
+        <span class="message-time">${photo.timestamp}</span>
+        ${photo.isSent ? '<i class="fas fa-check message-status"></i>' : ''}
+    `;
+    
+    msgDiv.appendChild(bubble);
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+async function selectFriend(friend) {
+    currentFriend = friend;
+    
+    // Update chat header
+    document.querySelector('.chat-contact-info .contact-name').innerText = friend.username;
+    document.querySelector('.contact-status').innerText = friend.online ? 'online' : 'offline';
+    document.querySelector('.chat-contact-info .avatar').innerText = friend.username[0].toUpperCase();
+    
+    // Enable input
+    document.getElementById('messageText').disabled = false;
+    document.getElementById('photoBtn').classList.remove('disabled');
+    document.getElementById('photoBtn').disabled = false;
+    document.getElementById('sendBtn').classList.remove('disabled');
+    document.getElementById('sendBtn').disabled = false;
+
+    document.getElementById('messages').innerHTML = '';
+
+    // Close sidebar on mobile
+    if (window.innerWidth < 768) closeSidebar();
+
+    // Highlight selected friend
+    document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('selected'));
+    document.querySelector(`.contact-item[data-id="${friend.id}"]`).classList.add('selected');
+
+    // Load messages
+    const response = await fetch(`/messages/${friend.id}`);
+    const messages = await response.json();
+    for (const msg of messages) {
+        try {
+            if (msg.type === 'text') {
+                const decrypted = await decryptMessage(msg.encrypted_message, msg.encrypted_key, msg.iv);
+                displayMessage({
+                    text: decrypted,
+                    isSent: msg.is_sent,
+                    timestamp: new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+            } else if (msg.type === 'photo') {
+                await processPhotoMessage(msg);
+            }
+        } catch (e) {
+            console.error('Failed to decrypt message', e);
         }
-        return bytes.buffer;
-    }
-
-    try {
-        const publicKeyBuffer = pemToArrayBuffer(publicKeyPem);
-        const publicKey = await crypto.subtle.importKey(
-            "spki",
-            publicKeyBuffer,
-            {
-                name: "RSA-OAEP",
-                hash: "SHA-256"
-            },
-            false,
-            ["encrypt"]
-        );
-
-        return await crypto.subtle.encrypt(
-            { name: "RSA-OAEP" },
-            publicKey,
-            aesKeyRaw
-        );
-    } catch (e) {
-        console.error('RSA encryption failed:', e);
-        throw e;
     }
 }
 
-async function getPublicKeyForUser(userId) {
-    const response = await fetch(`/public_key/${userId}`);
-    if (!response.ok) {
-        throw new Error(`Failed to fetch public key: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.public_key;
+async function loadFriends() {
+    const response = await fetch('/friends');
+    friends = await response.json();
+    const friendsList = document.getElementById('friendsList');
+    friendsList.innerHTML = '';
+    friends.forEach(friend => {
+        const div = document.createElement('div');
+        div.className = 'contact-item';
+        div.dataset.id = friend.id;
+        div.innerHTML = `
+            <div class="contact-avatar">
+                ${friend.username[0].toUpperCase()}
+                <span class="online-indicator" style="display: ${friend.online ? 'block' : 'none'};"></span>
+            </div>
+            <div class="contact-info">
+                <div class="contact-name-row">
+                    <span class="contact-name">${friend.username}</span>
+                    <span class="contact-time"></span>
+                </div>
+                <div class="contact-last-message"></div>
+            </div>
+        `;
+        div.addEventListener('click', () => selectFriend(friend));
+        friendsList.appendChild(div);
+    });
 }
 
 function handleTyping() {
@@ -500,20 +517,25 @@ function handleTyping() {
 async function searchUsers() {
     const query = document.getElementById('searchInput').value;
     if (query.length < 1) {
-        document.getElementById('searchResults').innerHTML = '';
+        document.querySelector('.search-results').classList.remove('active');
         return;
     }
     const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
     const users = await response.json();
-    const resultsDiv = document.getElementById('searchResults');
+    const resultsDiv = document.querySelector('.search-results');
     resultsDiv.innerHTML = '';
-    users.forEach(user => {
-        const div = document.createElement('div');
-        div.className = 'search-result-item';
-        div.innerText = user.username;
-        div.addEventListener('click', () => sendFriendRequest(user.id));
-        resultsDiv.appendChild(div);
-    });
+    if (users.length > 0) {
+        resultsDiv.classList.add('active');
+        users.forEach(user => {
+            const div = document.createElement('div');
+            div.className = 'search-result-item';
+            div.innerText = user.username;
+            div.addEventListener('click', () => sendFriendRequest(user.id));
+            resultsDiv.appendChild(div);
+        });
+    } else {
+        resultsDiv.classList.remove('active');
+    }
 }
 
 async function sendFriendRequest(recipientId) {
@@ -523,8 +545,8 @@ async function sendFriendRequest(recipientId) {
         body: JSON.stringify({ recipient_id: recipientId })
     });
     alert('Friend request sent');
-    document.getElementById('searchResults').innerHTML = '';
     document.getElementById('searchInput').value = '';
+    document.querySelector('.search-results').classList.remove('active');
 }
 
 function logout() {
