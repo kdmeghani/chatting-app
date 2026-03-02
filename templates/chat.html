@@ -1,40 +1,72 @@
 {% extends "base.html" %}
 {% block title %}Chat{% endblock %}
 {% block content %}
-<div class="chat-container">
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="whatsapp-container">
+    <!-- Sidebar (Contacts) -->
     <div class="sidebar" id="sidebar">
-        <div class="user-header">
-            <h3>Welcome, {{ username }}</h3>
-            <button id="logoutBtn">Logout</button>
+        <div class="sidebar-header">
+            <div class="user-info">
+                <div class="avatar">{{ username[0]|upper }}</div>
+                <span>{{ username }}</span>
+            </div>
+            <div class="header-icons">
+                <i class="fas fa-circle-plus"></i>
+                <i class="fas fa-ellipsis-vertical"></i>
+                <i class="fas fa-sign-out-alt" id="logoutBtn"></i>
+            </div>
         </div>
-        <div class="search">
-            <input type="text" id="searchInput" placeholder="Search users...">
-            <div id="searchResults"></div>
+        
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search or start new chat">
         </div>
+        <div id="searchResults" class="search-results"></div>
+        
         <div class="friend-requests">
             <a href="{{ url_for('list_requests') }}">Friend Requests</a>
         </div>
-        <div class="friends-list" id="friendsList">
-            <!-- Friends will be loaded here -->
+        
+        <div class="contacts-list" id="friendsList">
+            <!-- Friends loaded by JS -->
         </div>
     </div>
+
+    <!-- Chat Area -->
     <div class="chat-area">
         <div class="chat-header">
-            <button class="menu-toggle" id="menuToggle">☰</button>
-            <span id="chatHeader">Select a friend to start chatting</span>
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="chat-contact-info" id="chatHeader">
+                <div class="avatar"></div>
+                <div class="contact-details">
+                    <span class="contact-name">Select a chat</span>
+                    <span class="contact-status"></span>
+                </div>
+            </div>
+            <div class="chat-header-icons">
+                <i class="fas fa-video"></i>
+                <i class="fas fa-phone"></i>
+                <i class="fas fa-ellipsis-vertical"></i>
+            </div>
         </div>
-        <div class="messages" id="messages"></div>
+
+        <div class="messages-container" id="messages">
+            <!-- Messages appear here -->
+        </div>
+
         <div class="typing-indicator" id="typingIndicator"></div>
-        
-        <!-- Message input section - ALWAYS visible but enabled only when friend selected -->
-        <div class="message-input" id="messageInputContainer">
-            <textarea id="messageText" placeholder="Type a message..." disabled></textarea>
+
+        <!-- Message Input -->
+        <div class="message-input-container" id="messageInputContainer">
+            <i class="fas fa-plus-circle"></i>
+            <textarea id="messageText" placeholder="Type a message" disabled></textarea>
             <input type="file" id="photoInput" accept="image/*" style="display: none;">
-            <button id="photoBtn" disabled>📷</button>
-            <button id="sendBtn" disabled>Send</button>
+            <i class="fas fa-camera" id="photoBtn" disabled></i>
+            <i class="fas fa-paper-plane" id="sendBtn" disabled></i>
         </div>
     </div>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 </div>
 
 <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
