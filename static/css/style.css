@@ -633,3 +633,64 @@ body {
     background: #2a3942;
     border-radius: 10px;
 }
+
+/* ULTIMATE EMERGENCY FIX FOR MESSAGE INPUT */
+#messageInputContainer {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: #202c33 !important;
+    padding: 10px !important;
+    border-top: 3px solid #00a884 !important;
+    z-index: 999999 !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
+}
+
+#messageText {
+    display: block !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    background: #2a3942 !important;
+    border: 1px solid #3b4a54 !important;
+    border-radius: 8px !important;
+    color: white !important;
+    padding: 8px !important;
+    font-size: 14px !important;
+    flex: 1 !important;
+    margin-right: 8px !important;
+}
+
+#photoBtn, #sendBtn {
+    display: inline-block !important;
+    height: 40px !important;
+    min-width: 50px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+}
+
+#photoBtn {
+    background: #28a745 !important;
+    margin-right: 5px !important;
+}
+
+#sendBtn {
+    background: #007bff !important;
+}
+
+body {
+    padding-bottom: 60px !important;
+}
+
+.messages {
+    margin-bottom: 60px !important;
+}
+
